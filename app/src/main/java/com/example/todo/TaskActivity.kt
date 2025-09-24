@@ -33,7 +33,6 @@ class TaskActivity : AppCompatActivity() {
             Toast.makeText(this, "Invalid task index", Toast.LENGTH_SHORT).show()
         }
 
-
         // Modal Date Picker
         deadlineLayout.setEndIconOnClickListener {
             val calendar = Calendar.getInstance()
