@@ -1,0 +1,41 @@
+# =========================================
+# Android / Gradle Project Git Ignore File
+# For ClearPath
+# =========================================
+
+# Gradle
+.gradle/
+build/
+*/build/
+
+# Local configuration
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Logs
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Captures
+captures/
+
+# Native/NDK
+.externalNativeBuild/
+.cxx/
+
+# APK / AAB outputs
+*.apk
+*.ap_
+*.aab
+
+# Generated files
+gen/
+out/
