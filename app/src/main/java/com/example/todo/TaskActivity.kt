@@ -32,9 +32,9 @@ class TaskActivity : AppCompatActivity() {
         dao = db.taskDao()
 
         taskId = intent.getIntExtra("taskId", -1).takeIf {it != -1}
-        if (taskId != null) {
+        taskId?.let { id ->
             lifecycleScope.launch {
-                val task = dao.getTaskById(taskId!!)
+                val task = dao.getTaskById(id)
                 if (task != null) {
                     titleInput.setText(task.title)
                     deadlineInput.setText(task.deadline)
