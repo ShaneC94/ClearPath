@@ -7,10 +7,15 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 
 class TaskActivity : AppCompatActivity() {
+    private lateinit var dao: TaskDao
+    private var taskId: Int? = null //null means new task, not editing
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_task_generator)
@@ -22,16 +27,25 @@ class TaskActivity : AppCompatActivity() {
         val backButton = findViewById<Button>(R.id.backButton)
         val saveButton = findViewById<Button>(R.id.saveButton)
 
-        val taskIndex = intent.getIntExtra("taskIndex", -1)
-        if (taskIndex >= 0 && taskIndex < MainActivity.tasks.size) {
-            val task = MainActivity.tasks[taskIndex]
-            titleInput.setText(task.title)
-            deadlineInput.setText(task.deadline)
-            descriptionInput.setText(task.description)
-            saveButton.text = getString(R.string.update_task)
-        } else {
-            Toast.makeText(this, "Invalid task index", Toast.LENGTH_SHORT).show()
+        //init db
+        val db = TaskDatabase.getDatabase(this)
+        dao = db.taskDao()
+
+        taskId = intent.getIntExtra("taskId", -1).takeIf {it != -1}
+        if (taskId != null) {
+            lifecycleScope.launch {
+                val task = dao.getTaskById(taskId!!)
+                if (task != null) {
+                    titleInput.setText(task.title)
+                    deadlineInput.setText(task.deadline)
+                    descriptionInput.setText(task.description)
+                    saveButton.text = getString(R.string.update_task)
+                } else {
+                    Toast.makeText(this@TaskActivity, "Task not found", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
+
 
         // Modal Date Picker
         deadlineLayout.setEndIconOnClickListener {
@@ -49,8 +63,6 @@ class TaskActivity : AppCompatActivity() {
         }
         // The user does a normal click and is navigated back without saving
         backButton.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
             finish()
         }
         // The user does a normal click and is navigated back with saving
@@ -61,22 +73,37 @@ class TaskActivity : AppCompatActivity() {
                 titleInput.error = "A title is required"
                 return@setOnClickListener
             }
+
             val taskDeadline = if (deadlineInput.text.toString().trim().isEmpty()) {
                 "No deadline"
             } else {
                 deadlineInput.text.toString().trim()
             }
+
             val taskDescription = if (descriptionInput.text.toString().trim().isEmpty()) {
                 "No description"
             } else {
                 descriptionInput.text.toString().trim()
             }
 
-            MainActivity.tasks.add(Task(taskTitle, taskDeadline, taskDescription))
-            Toast.makeText(this, "Task saved successfully!", Toast.LENGTH_SHORT).show()
-
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            lifecycleScope.launch {
+                if (taskId == null) {
+                    //create a new task
+                    dao.insertTask(Task(title = taskTitle, deadline = taskDeadline, description = taskDescription))
+                    Toast.makeText(this@TaskActivity, "Task saved successfully!", Toast.LENGTH_SHORT).show()
+                } else {
+                    val existing = dao.getTaskById(taskId!!)
+                    if (existing != null) {
+                        val updated = existing.copy(
+                            title = taskTitle,
+                            deadline = taskDeadline,
+                            description = taskDescription
+                        )
+                        dao.updateTask(updated)
+                        Toast.makeText(this@TaskActivity, "Task saved successfully!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
             finish()
         }
         // If the user long clicks, it's ignored and nothing happens

@@ -9,16 +9,15 @@ import android.text.Editable
 import android.text.TextWatcher
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
-//    acts like in-memory storage - making shared task list accessible
-    companion object {
-        val tasks = mutableListOf<Task>()
-    }
 
     private lateinit var adapter: TaskAdapter //initialized later in onCreate
+    private lateinit var db: TaskDatabase
+    private lateinit var dao: TaskDao
 
     //init, set layout, UI configuration
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,18 +25,26 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        //init db
+        db = TaskDatabase.getDatabase(this)
+        dao = db.taskDao()
+
         val searchInput = findViewById<EditText>(R.id.searchInput)
         val fab = findViewById<FloatingActionButton>(R.id.taskFab)
         val recyclerView = findViewById<RecyclerView>(R.id.taskRecyclerView)
 
         //recyclerview setup
-        adapter = TaskAdapter(tasks)
+        adapter = TaskAdapter(emptyList(), dao)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
+        //load all tasks from db
+        lifecycleScope.launch {
+            val tasks = dao.getAllTasks()
+            adapter.updateList(tasks)
+        }
 
-        //handles typing in the search bar
-        //if empty - show all tasks, else filter
+        //handle search input (filter db)
         searchInput.addTextChangedListener(object:TextWatcher {
             override fun beforeTextChanged(s: CharSequence?,
                                            start: Int,
@@ -48,18 +55,20 @@ class MainActivity : AppCompatActivity() {
                                        count: Int,
                                        after: Int) {
                 val query = s.toString().trim()
-                val filtered = if (query.isEmpty()) {
-                    tasks
-                } else {
-                    tasks.filter {it.title.contains(query, ignoreCase = true)}
+                lifecycleScope.launch {
+                    val tasks = if (query.isEmpty()) {
+                        dao.getAllTasks()
+                    } else {
+                        dao.searchTasks("%$query%")
+                    }
+                    adapter.updateList(tasks)
                 }
-                adapter.updateList(filtered)
             }
 
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        //handles the FAB click
+        //handles the FAB clicker to create new task
         fab.setOnClickListener {
             val intent = Intent(this, TaskActivity::class.java)
             startActivity(intent)
@@ -68,6 +77,9 @@ class MainActivity : AppCompatActivity() {
     }
     override fun onResume(){
         super.onResume()
-        adapter.updateList(tasks) //shows all the tasks by default
+        lifecycleScope.launch {
+            val tasks = dao.getAllTasks()
+            adapter.updateList(tasks)
+        }
     }
 }
