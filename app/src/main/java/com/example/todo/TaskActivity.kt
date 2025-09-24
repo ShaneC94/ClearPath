@@ -92,17 +92,18 @@ class TaskActivity : AppCompatActivity() {
                     dao.insertTask(Task(title = taskTitle, deadline = taskDeadline, description = taskDescription))
                     Toast.makeText(this@TaskActivity, "Task saved successfully!", Toast.LENGTH_SHORT).show()
                 } else {
-                    val existing = dao.getTaskById(taskId!!)
-                    if (existing != null) {
-                        val updated = existing.copy(
-                            title = taskTitle,
-                            deadline = taskDeadline,
-                            description = taskDescription
-                        )
-                        dao.updateTask(updated)
-                        Toast.makeText(this@TaskActivity, "Task saved successfully!", Toast.LENGTH_SHORT).show()
+                    taskId?.let { id ->
+                        val existing = dao.getTaskById(id)
+                        if (existing != null) {
+                            val updated = existing.copy(
+                                title = taskTitle,
+                                deadline = taskDeadline,
+                                description = taskDescription
+                            )
+                            dao.updateTask(updated)
+                            Toast.makeText(this@TaskActivity, "Task saved successfully!", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                }
             }
             finish()
         }
