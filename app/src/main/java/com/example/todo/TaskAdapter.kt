@@ -1,5 +1,6 @@
 package com.example.todo
 
+import android.content.Intent
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -38,6 +39,15 @@ class TaskAdapter(
         holder.deadline.text = "Deadline: ${task.deadline}"
         holder.description.text = task.description
         holder.checkBox.isChecked = task.isDone
+
+        //longclick for editing
+        holder.itemView.setOnLongClickListener {
+            val context = holder.itemView.context
+            val intent = Intent(context, TaskActivity::class.java)
+            intent.putExtra("taskIndex", position) //pass which task to edit
+            context.startActivity(intent)
+            true
+        }
 
         //expand/collapse title
         if (expandedTitles.contains(position)) {

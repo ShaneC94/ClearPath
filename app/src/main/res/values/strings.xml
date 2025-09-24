@@ -9,4 +9,5 @@
     <string name="back">Back</string>
     <string name="go_back_without_saving">Go back without saving</string>
     <string name="add_task">Add task</string>
+    <string name="update_task">Update Task</string>
 </resources>

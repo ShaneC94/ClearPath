@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        //connect xml views to kotlin var
         val searchInput = findViewById<EditText>(R.id.searchInput)
         val fab = findViewById<FloatingActionButton>(R.id.taskFab)
         val recyclerView = findViewById<RecyclerView>(R.id.taskRecyclerView)
