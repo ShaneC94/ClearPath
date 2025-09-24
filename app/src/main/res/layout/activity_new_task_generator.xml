@@ -17,11 +17,10 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="88dp"
-        android:hint="Enter task title"
+        android:hint="@string/enter_task_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTitle"
             android:layout_width="match_parent"
@@ -34,7 +33,7 @@
             android:scrollbars="vertical"
             android:padding="12dp"
             android:textColor="@color/main_text"
-            android:textColorHint="@color/meadow_olive" />
+            android:textColorHint="@color/meadow_olive"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <!--    Deadline-->
@@ -44,14 +43,13 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
-        android:hint="Enter deadline (YYYY/MM/DD)"
+        android:hint="@string/enter_deadline"
         app:endIconDrawable="@android:drawable/ic_menu_my_calendar"
         app:endIconMode="custom"
         app:endIconTint="@color/meadow_accent_dark"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/titleLayout">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editDeadlineDate"
             android:layout_width="match_parent"
@@ -59,8 +57,9 @@
             android:inputType="date"
             android:padding="12dp"
             android:textColor="@color/main_text"
-            android:textColorHint="@color/meadow_olive" />
+            android:textColorHint="@color/meadow_olive"/>
     </com.google.android.material.textfield.TextInputLayout>
+
     <!--    Description          -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/descriptionLayout"
@@ -69,11 +68,10 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
-        android:hint="Enter description"
+        android:hint="@string/enter_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/deadlineLayout">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editDescription"
             android:layout_width="match_parent"
@@ -86,8 +84,9 @@
             android:scrollbars="vertical"
             android:padding="12dp"
             android:textColor="@color/main_text"
-            android:textColorHint="@color/meadow_olive" />
+            android:textColorHint="@color/meadow_olive"/>
     </com.google.android.material.textfield.TextInputLayout>
+
     <!--    Save Button         -->
     <Button
         android:id="@+id/saveButton"
@@ -96,23 +95,23 @@
         android:layout_marginTop="12dp"
         android:layout_marginEnd="16dp"
         android:backgroundTint="@color/meadow_accent_dark"
-        android:text="Save"
+        android:text="@string/save"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/descriptionLayout"
-        android:contentDescription="Save task" />
+        android:contentDescription="@string/save_task"/>
+
     <!--    Back Button         -->
     <Button
         android:id="@+id/backButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Back"
+        android:text="@string/back"
         android:textColor="@color/meadow_accent_dark"
         android:backgroundTint="@color/meadow_green"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintTop_toBottomOf="@id/saveButton"
         app:layout_constraintEnd_toEndOf="parent"
-        android:contentDescription="Go back without saving" />
-
+        android:contentDescription="@string/go_back_without_saving"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

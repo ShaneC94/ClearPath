@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">ToDo</string>
+    <string name="app_name">ClearPath</string>
+    <string name="search">Search your tasks</string>
+    <string name="enter_task_title">Enter task title</string>
+    <string name="enter_deadline">Enter deadline (YYYY/MM/DD)</string>
+    <string name="enter_description">Enter description</string>
+    <string name="save">Save</string>
+    <string name="save_task">Save task</string>
+    <string name="back">Back</string>
+    <string name="go_back_without_saving">Go back without saving</string>
+    <string name="add_task">Add task</string>
 </resources>
