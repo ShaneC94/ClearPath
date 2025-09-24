@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ToDo">
 
+        <activity android:name=".CompletedTasksActivity"/>
         <activity android:name=".TaskActivity"/>
 
         <activity

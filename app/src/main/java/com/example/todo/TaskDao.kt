@@ -13,12 +13,30 @@ interface TaskDao {
     @Delete
     suspend fun deleteTask(task: Task)
 
-    @Query("SELECT * FROM tasks ORDER BY id DESC")
-    suspend fun getAllTasks(): List<Task>
+//    @Query("SELECT * FROM tasks ORDER BY id DESC")
+//    suspend fun getAllTasks(): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY id DESC")
+    suspend fun getOngoingTasks(): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE isDone = 1 ORDER BY id DESC")
+    suspend fun getCompletedTasks(): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY id DESC")
+    suspend fun getTasksNow(): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE isDone = 1 ORDER BY id DESC")
+    suspend fun getCompletedTasksNow(): List<Task>
 
     @Query("SELECT * FROM tasks WHERE id = :id LIMIT 1")
     suspend fun getTaskById(id: Int): Task?
 
-    @Query("SELECT * FROM tasks WHERE title LIKE :query ORDER BY id DESC")
-    suspend fun searchTasks(query: String): List<Task>
+    @Query("SELECT * FROM tasks WHERE isDone = 0 AND (title LIKE :query OR description LIKE :query OR deadline LIKE :query)")
+    suspend fun searchOngoingTasks(query: String): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE isDone = 1 AND (title LIKE :query OR description LIKE :query OR deadline LIKE :query)")
+    suspend fun searchCompletedTasks(query: String): List<Task>
+
+
+
 }

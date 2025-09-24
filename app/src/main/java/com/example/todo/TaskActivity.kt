@@ -74,16 +74,12 @@ class TaskActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val taskDeadline = if (deadlineInput.text.toString().trim().isEmpty()) {
+            val taskDeadline = deadlineInput.text.toString().trim().ifEmpty {
                 "No deadline"
-            } else {
-                deadlineInput.text.toString().trim()
             }
 
-            val taskDescription = if (descriptionInput.text.toString().trim().isEmpty()) {
+            val taskDescription = descriptionInput.text.toString().trim().ifEmpty {
                 "No description"
-            } else {
-                descriptionInput.text.toString().trim()
             }
 
             lifecycleScope.launch {
