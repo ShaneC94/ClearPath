@@ -8,13 +8,15 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class TaskAdapter(
     private var taskList: List<Task>,
-    private val dao: TaskDao
+    private val dao: TaskDao,
+    private val onTaskUpdated: suspend (Task) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
     //tracks which item is expanded - allows for both to expand individually
@@ -42,6 +44,7 @@ class TaskAdapter(
         holder.title.text = task.title
         holder.deadline.text = "Deadline: ${task.deadline}"
         holder.description.text = task.description
+        holder.checkBox.setOnCheckedChangeListener(null) //avoids trigger during recycling
         holder.checkBox.isChecked = task.isDone
 
         //longclick for editing
@@ -92,9 +95,9 @@ class TaskAdapter(
         }
 
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
-            task.isDone = isChecked
+            val updated = task.copy(isDone = isChecked)
             CoroutineScope(Dispatchers.IO).launch {
-                dao.updateTask(task) //persist change
+                    onTaskUpdated(updated)
             }
         }
     }

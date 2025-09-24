@@ -2,6 +2,7 @@ package com.example.todo
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,17 +33,22 @@ class MainActivity : AppCompatActivity() {
         val searchInput = findViewById<EditText>(R.id.searchInput)
         val fab = findViewById<FloatingActionButton>(R.id.taskFab)
         val recyclerView = findViewById<RecyclerView>(R.id.taskRecyclerView)
+        val completedButton = findViewById<Button>(R.id.completedTasksButton)
+
+
+        //load all tasks from db
+        adapter = TaskAdapter(emptyList(), dao) { updatedTask ->
+            lifecycleScope.launch {
+                dao.updateTask(updatedTask)
+                val tasks = dao.getOngoingTasks()
+                adapter.updateList(tasks)
+            }
+        }
 
         //recyclerview setup
-        adapter = TaskAdapter(emptyList(), dao)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        //load all tasks from db
-        lifecycleScope.launch {
-            val tasks = dao.getAllTasks()
-            adapter.updateList(tasks)
-        }
 
         //handle search input (filter db)
         searchInput.addTextChangedListener(object:TextWatcher {
@@ -57,9 +63,9 @@ class MainActivity : AppCompatActivity() {
                 val query = s.toString().trim()
                 lifecycleScope.launch {
                     val tasks = if (query.isEmpty()) {
-                        dao.getAllTasks()
+                        dao.getOngoingTasks()
                     } else {
-                        dao.searchTasks("%$query%")
+                        dao.searchOngoingTasks("%$query%")
                     }
                     adapter.updateList(tasks)
                 }
@@ -73,12 +79,16 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, TaskActivity::class.java)
             startActivity(intent)
         }
+        completedButton.setOnClickListener {
+            startActivity(Intent(this, CompletedTasksActivity::class.java))
+        }
+
 
     }
     override fun onResume(){
         super.onResume()
         lifecycleScope.launch {
-            val tasks = dao.getAllTasks()
+            val tasks = dao.getOngoingTasks()
             adapter.updateList(tasks)
         }
     }
