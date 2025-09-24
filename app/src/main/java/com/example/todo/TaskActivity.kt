@@ -23,14 +23,15 @@ class TaskActivity : AppCompatActivity() {
         val saveButton = findViewById<Button>(R.id.saveButton)
 
         val taskIndex = intent.getIntExtra("taskIndex", -1)
-        if (taskIndex != -1) {
+        if (taskIndex >= 0 && taskIndex < MainActivity.tasks.size) {
             val task = MainActivity.tasks[taskIndex]
             titleInput.setText(task.title)
             deadlineInput.setText(task.deadline)
             descriptionInput.setText(task.description)
             saveButton.text = getString(R.string.update_task)
+        } else {
+            Toast.makeText(this, "Invalid task index", Toast.LENGTH_SHORT).show()
         }
-
 
         // Modal Date Picker
         deadlineLayout.setEndIconOnClickListener {
