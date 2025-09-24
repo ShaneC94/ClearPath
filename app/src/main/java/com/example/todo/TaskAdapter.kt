@@ -8,9 +8,13 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class TaskAdapter(
-    private var taskList: List<Task>
+    private var taskList: List<Task>,
+    private val dao: TaskDao
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
     //tracks which item is expanded - allows for both to expand individually
@@ -44,7 +48,7 @@ class TaskAdapter(
         holder.itemView.setOnLongClickListener {
             val context = holder.itemView.context
             val intent = Intent(context, TaskActivity::class.java)
-            intent.putExtra("taskIndex", position) //pass which task to edit
+            intent.putExtra("taskId", task.id) //pass which task to edit
             context.startActivity(intent)
             true
         }
@@ -89,6 +93,9 @@ class TaskAdapter(
 
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
             task.isDone = isChecked
+            CoroutineScope(Dispatchers.IO).launch {
+                dao.updateTask(task) //persist change
+            }
         }
     }
     //tells recyclerview how many tasks exist
