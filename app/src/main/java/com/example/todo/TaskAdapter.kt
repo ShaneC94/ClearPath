@@ -96,7 +96,7 @@ class TaskAdapter(
 
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
             val updated = task.copy(isDone = isChecked)
-            CoroutineScope(Dispatchers.Main).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                     onTaskUpdated(updated)
             }
         }
