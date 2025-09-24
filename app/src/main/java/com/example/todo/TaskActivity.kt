@@ -22,11 +22,15 @@ class TaskActivity : AppCompatActivity() {
         val backButton = findViewById<Button>(R.id.backButton)
         val saveButton = findViewById<Button>(R.id.saveButton)
 
-        //adds vertical scrollbars so user can scroll through longer
-        //descriptions without issues
-//        descriptionInput.isVerticalScrollBarEnabled = true
-//        descriptionInput.setHorizontallyScrolling(false)
-//        descriptionInput.maxLines = Integer.MAX_VALUE
+        val taskIndex = intent.getIntExtra("taskIndex", -1)
+        if (taskIndex != -1) {
+            val task = MainActivity.tasks[taskIndex]
+            titleInput.setText(task.title)
+            deadlineInput.setText(task.deadline)
+            descriptionInput.setText(task.description)
+            saveButton.text = getString(R.string.update_task)
+        }
+
 
         // Modal Date Picker
         deadlineLayout.setEndIconOnClickListener {
