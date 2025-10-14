@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 
 class TaskAdapter(
     private var taskList: List<Task>,
-    private val dao: TaskDao,
     private val onTaskUpdated: suspend (Task) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
@@ -114,8 +113,4 @@ class TaskAdapter(
 
     // Helper for swipe-to-complete/delete
     fun getTaskAt(position: Int): Task = taskList[position]
-
-    // Optional helper if you ever need the whole list
-    val currentList: List<Task>
-        get() = taskList
 }

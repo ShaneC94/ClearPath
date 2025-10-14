@@ -33,7 +33,7 @@ places the task info vertically, title, date, description -->
                 android:id="@+id/taskTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Task Title"
+                android:text="@string/task_title"
                 android:textSize="18sp"
                 android:textColor="@color/main_text"
                 android:maxLines="2"
@@ -45,7 +45,7 @@ places the task info vertically, title, date, description -->
                 android:id="@+id/taskDeadline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Deadline: YYYY/MM/DD"
+                android:text="@string/task_deadline_placeholder"
                 android:textSize="14sp"
                 android:textColor="@color/main_text"/>
 
@@ -53,7 +53,7 @@ places the task info vertically, title, date, description -->
                 android:id="@+id/taskDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Task description goes here"
+                android:text="@string/task_description_placeholder"
                 android:textSize="14sp"
                 android:textColor="@color/main_text"
                 android:maxLines="2"

@@ -4,6 +4,9 @@
     <string name="enter_task_title">Enter task title</string>
     <string name="enter_deadline">Enter deadline (YYYY/MM/DD)</string>
     <string name="enter_description">Enter description</string>
+    <string name="task_title">Task Title</string>
+    <string name="task_deadline_placeholder">Deadline: (YYYY/MM/DD)</string>
+    <string name="task_description_placeholder">Task description goes here</string>
     <string name="save">Save</string>
     <string name="save_task">Save task</string>
     <string name="back">Back</string>
