@@ -12,5 +12,6 @@
     <string name="update_task">Update Task</string>
     <string name="view_completed_tasks">View Completed Tasks</string>
     <string name="view_ongoing_tasks">View Ongoing Tasks</string>
+    <string name="deadline_task_card">Deadline: %1$s</string>
 
 </resources>

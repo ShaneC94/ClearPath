@@ -7,6 +7,13 @@
     <color name="meadow_accent_dark">#4F6D7A</color>
     <color name="meadow_beige">#D6CFC4</color>
 
+    <!--    Extra Colors-->
+    <color name="task_blue">#7BAFD4</color>
+    <color name="task_yellow">#EFD780</color>
+    <color name="task_pink">#E8A0B3</color>
+    <color name="task_orange">#E8B980</color>
+
+
     <!--    Text    -->
     <color name="main_text">#2E2E2E</color>
     <color name="white">#FFFFFF</color>

@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,11 +19,9 @@ class TaskAdapter(
     private val onTaskUpdated: suspend (Task) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
-    //tracks which item is expanded - allows for both to expand individually
-    //null if none are expanded
+    // Tracks expanded titles/descriptions
     private var expandedTitles = mutableSetOf<Int>()
     private var expandedDescriptions = mutableSetOf<Int>()
-
 
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val checkBox: CheckBox = itemView.findViewById(R.id.taskCheckBox)
@@ -42,21 +40,29 @@ class TaskAdapter(
         val task = taskList[position]
 
         holder.title.text = task.title
-        holder.deadline.text = "Deadline: ${task.deadline}"
+        holder.deadline.text = holder.itemView.context.getString(
+            R.string.deadline_task_card,
+            task.deadline
+        )
         holder.description.text = task.description
-        holder.checkBox.setOnCheckedChangeListener(null) //avoids trigger during recycling
-        holder.checkBox.isChecked = task.isDone
+        holder.checkBox.setOnCheckedChangeListener(null)
+        holder.checkBox.isChecked = task.isDone // match your database flag
 
-        //longclick for editing
+        // Long click → edit task
         holder.itemView.setOnLongClickListener {
             val context = holder.itemView.context
             val intent = Intent(context, TaskActivity::class.java)
-            intent.putExtra("taskId", task.id) //pass which task to edit
+            intent.putExtra("taskId", task.id)
             context.startActivity(intent)
             true
         }
 
-        //expand/collapse title
+        // Apply background color from task
+        (holder.itemView as CardView).setCardBackgroundColor(
+            holder.itemView.context.getColor(task.colorResId)
+        )
+
+        // Expand / collapse title
         if (expandedTitles.contains(position)) {
             holder.title.maxLines = Int.MAX_VALUE
             holder.title.ellipsize = null
@@ -65,7 +71,7 @@ class TaskAdapter(
             holder.title.ellipsize = TextUtils.TruncateAt.END
         }
 
-        //expand/collapse description
+        // Expand / collapse description
         if (expandedDescriptions.contains(position)) {
             holder.description.maxLines = Int.MAX_VALUE
             holder.description.ellipsize = null
@@ -74,37 +80,31 @@ class TaskAdapter(
             holder.description.ellipsize = TextUtils.TruncateAt.END
         }
 
-        //toggle title click listener
+        // Title toggle
         holder.title.setOnClickListener {
-            if (expandedTitles.contains(position)) {
-                expandedTitles.remove(position)
-            } else {
-                expandedTitles.add(position)
-            }
+            if (expandedTitles.contains(position)) expandedTitles.remove(position)
+            else expandedTitles.add(position)
             notifyItemChanged(position)
         }
 
-        //toggle description click listener
+        // Description toggle
         holder.description.setOnClickListener {
-            if (expandedDescriptions.contains(position)) {
-                expandedDescriptions.remove(position)
-            } else {
-                expandedDescriptions.add(position)
-            }
+            if (expandedDescriptions.contains(position)) expandedDescriptions.remove(position)
+            else expandedDescriptions.add(position)
             notifyItemChanged(position)
         }
 
+        // Check / uncheck → update database
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
-            val updated = task.copy(isDone = isChecked)
+            val updated = task.copy(isDone = isChecked) // fix property name
             CoroutineScope(Dispatchers.IO).launch {
-                    onTaskUpdated(updated)
+                onTaskUpdated(updated)
             }
         }
     }
-    //tells recyclerview how many tasks exist
+
     override fun getItemCount(): Int = taskList.size
 
-    //refreshes adapter when the list changes
     fun updateList(newList: List<Task>) {
         taskList = newList
         expandedTitles.clear()
@@ -112,5 +112,10 @@ class TaskAdapter(
         notifyDataSetChanged()
     }
 
+    // Helper for swipe-to-complete/delete
+    fun getTaskAt(position: Int): Task = taskList[position]
 
+    // Optional helper if you ever need the whole list
+    val currentList: List<Task>
+        get() = taskList
 }
