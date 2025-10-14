@@ -47,7 +47,7 @@ places the task info vertically, title, date, description -->
                 android:layout_height="wrap_content"
                 android:text="Deadline: YYYY/MM/DD"
                 android:textSize="14sp"
-                android:textColor="@color/meadow_olive"/>
+                android:textColor="@color/main_text"/>
 
             <TextView
                 android:id="@+id/taskDescription"

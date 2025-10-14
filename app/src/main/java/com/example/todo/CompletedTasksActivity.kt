@@ -8,9 +8,10 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class CompletedTasksActivity : AppCompatActivity() {
@@ -64,6 +65,35 @@ class CompletedTasksActivity : AppCompatActivity() {
         }
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val itemTouchHelper = ItemTouchHelper(object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.bindingAdapterPosition
+                val task = adapter.getTaskAt(position)
+
+                lifecycleScope.launch {
+                    dao.deleteTask(task)
+                    adapter.updateList(dao.getCompletedTasks())
+
+                    Snackbar.make(recyclerView, "Task deleted", Snackbar.LENGTH_LONG)
+                        .setAction("UNDO") {
+                            lifecycleScope.launch {
+                                dao.insertTask(task)
+                                adapter.updateList(dao.getCompletedTasks())
+                            }
+                        }.show()
+                }
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(recyclerView)
 
         refreshTasks()
     }
