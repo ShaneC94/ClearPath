@@ -16,5 +16,15 @@
     <string name="view_completed_tasks">View Completed Tasks</string>
     <string name="view_ongoing_tasks">View Ongoing Tasks</string>
     <string name="deadline_task_card">Deadline: %1$s</string>
+    <string name="filter_by_color">Filter by color</string>
+
+    <string-array name="color_filter_options">
+        <item>All Colors</item>
+        <item>Blue</item>
+        <item>Yellow</item>
+        <item>Pink</item>
+        <item>Orange</item>
+        <item>Beige</item>
+    </string-array>
 
 </resources>

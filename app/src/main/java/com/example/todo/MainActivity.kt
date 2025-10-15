@@ -6,6 +6,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.PopupMenu
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -13,7 +15,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -36,9 +37,10 @@ class MainActivity : AppCompatActivity() {
         val fab = findViewById<FloatingActionButton>(R.id.taskFab)
         val recyclerView = findViewById<RecyclerView>(R.id.taskRecyclerView)
         val completedButton = findViewById<Button>(R.id.completedTasksButton)
+        val filterButton = findViewById<ImageButton>(R.id.filterButton)
 
         //load all tasks from db
-        adapter = TaskAdapter(emptyList(), dao) { updatedTask ->
+        adapter = TaskAdapter(emptyList()) { updatedTask ->
             lifecycleScope.launch {
                 dao.updateTask(updatedTask)
                 val tasks = dao.getOngoingTasks()
@@ -51,15 +53,21 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         //handle search input (filter db)
-        searchInput.addTextChangedListener(object:TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?,
-                                           start: Int,
-                                           count: Int,
-                                           after: Int) {}
-            override fun onTextChanged(s: CharSequence?,
-                                       start: Int,
-                                       count: Int,
-                                       after: Int) {
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+            }
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
                 val query = s.toString().trim()
                 lifecycleScope.launch {
                     val tasks = if (query.isEmpty()) {
@@ -79,43 +87,50 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, TaskActivity::class.java)
             startActivity(intent)
         }
+        //navigate to the completed tasks
         completedButton.setOnClickListener {
             startActivity(Intent(this, CompletedTasksActivity::class.java))
         }
-        //swipe to complete - with undo function
-        val itemTouchHelper = ItemTouchHelper(object :
-            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+        //filters by color popup
+        filterButton.setOnClickListener {
+            val popup = PopupMenu(this, filterButton)
+            popup.menuInflater.inflate(R.menu.color_filter_menu, popup.menu)
 
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean = false
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.bindingAdapterPosition
-                val task = adapter.getTaskAt(position)  // use helper function instead of currentList
+            popup.setOnMenuItemClickListener { item ->
+                val selectedColorResId = when (item.itemId) {
+                    R.id.filter_all -> null
+                    R.id.filter_blue -> R.color.task_blue
+                    R.id.filter_yellow -> R.color.task_yellow
+                    R.id.filter_pink -> R.color.task_pink
+                    R.id.filter_orange -> R.color.task_orange
+                    R.id.filter_default -> R.color.meadow_beige
+                    else -> null
+                }
 
                 lifecycleScope.launch {
-                    val updatedTask = task.copy(isDone = true)
-                    dao.updateTask(updatedTask)
-                    adapter.updateList(dao.getOngoingTasks())
-
-                    Snackbar.make(recyclerView, "Task marked as completed", Snackbar.LENGTH_LONG)
-                        .setAction("UNDO") {
-                            lifecycleScope.launch {
-                                val undoneTask = task.copy(isDone = false)
-                                dao.updateTask(undoneTask)
-                                adapter.updateList(dao.getOngoingTasks())
-                            }
-                        }.show()
+                    val tasks = if (selectedColorResId == null) {
+                        dao.getOngoingTasks()
+                    } else {
+                        dao.getOngoingTasksByColor(selectedColorResId)
+                    }
+                    adapter.updateList(tasks)
                 }
+
+                true
             }
-        })
+
+            popup.show()
+        }
+
+
+        //swipe to complete - with undo function
+        val itemTouchHelper = ItemTouchHelper(
+            createSwipeCallback(adapter, recyclerView, dao, lifecycleScope)
+        )
         itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
-    override fun onResume(){
+        override fun onResume(){
         super.onResume()
         lifecycleScope.launch {
             val tasks = dao.getOngoingTasks()

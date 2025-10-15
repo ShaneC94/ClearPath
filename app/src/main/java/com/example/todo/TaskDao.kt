@@ -37,6 +37,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE isDone = 1 AND (title LIKE :query OR description LIKE :query OR deadline LIKE :query)")
     suspend fun searchCompletedTasks(query: String): List<Task>
 
+    @Query("SELECT * FROM tasks WHERE isDone = 0 AND colorResId = :colorResId")
+    suspend fun getOngoingTasksByColor(colorResId: Int): List<Task>
 
-
+    @Query("SELECT * FROM tasks WHERE isDone = 1 AND colorResId = :colorResId")
+    suspend fun getCompletedTasksByColor(colorResId: Int): List<Task>
 }
