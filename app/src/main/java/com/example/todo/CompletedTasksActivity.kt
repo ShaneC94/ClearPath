@@ -6,12 +6,13 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class CompletedTasksActivity : AppCompatActivity() {
@@ -28,6 +29,38 @@ class CompletedTasksActivity : AppCompatActivity() {
         dao = db.taskDao()
 
         val recyclerView = findViewById<RecyclerView>(R.id.completedRecyclerView)
+        val filterButton = findViewById<ImageButton>(R.id.filterButton)
+
+        //color filter popup
+        filterButton.setOnClickListener {
+            val popup = PopupMenu(this, filterButton)
+            popup.menuInflater.inflate(R.menu.color_filter_menu, popup.menu)
+
+            popup.setOnMenuItemClickListener { item ->
+                val selectedColorResId = when (item.itemId) {
+                    R.id.filter_all -> null
+                    R.id.filter_blue -> R.color.task_blue
+                    R.id.filter_yellow -> R.color.task_yellow
+                    R.id.filter_pink -> R.color.task_pink
+                    R.id.filter_orange -> R.color.task_orange
+                    R.id.filter_default -> R.color.meadow_beige
+                    else -> null
+                }
+                //queries and updates recyclerview based on color
+                lifecycleScope.launch {
+                    val tasks = if (selectedColorResId == null) {
+                        dao.getCompletedTasks()
+                    } else {
+                        dao.getCompletedTasksByColor(selectedColorResId)
+                    }
+                    adapter.updateList(tasks)
+                }
+
+                true
+            }
+
+            popup.show()
+        }
 
         //handle search input (filter db)
         searchInput.addTextChangedListener(object:TextWatcher {
@@ -57,7 +90,7 @@ class CompletedTasksActivity : AppCompatActivity() {
             startActivity(Intent(this, MainActivity::class.java))
         }
 
-        adapter = TaskAdapter(emptyList(), dao) { task ->
+        adapter = TaskAdapter(emptyList()) { task ->
             lifecycleScope.launch {
                 dao.updateTask(task)
                 refreshTasks()
@@ -65,34 +98,10 @@ class CompletedTasksActivity : AppCompatActivity() {
         }
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
-
-        val itemTouchHelper = ItemTouchHelper(object :
-            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
-
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean = false
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.bindingAdapterPosition
-                val task = adapter.getTaskAt(position)
-
-                lifecycleScope.launch {
-                    dao.deleteTask(task)
-                    adapter.updateList(dao.getCompletedTasks())
-
-                    Snackbar.make(recyclerView, "Task deleted", Snackbar.LENGTH_LONG)
-                        .setAction("UNDO") {
-                            lifecycleScope.launch {
-                                dao.insertTask(task)
-                                adapter.updateList(dao.getCompletedTasks())
-                            }
-                        }.show()
-                }
-            }
-        })
+        //swipe to delete with undo
+        val itemTouchHelper = ItemTouchHelper(
+            createSwipeToDeleteCallback(adapter, recyclerView, dao, lifecycleScope)
+        )
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
         refreshTasks()

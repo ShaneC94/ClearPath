@@ -45,7 +45,7 @@ class TaskAdapter(
         )
         holder.description.text = task.description
         holder.checkBox.setOnCheckedChangeListener(null)
-        holder.checkBox.isChecked = task.isDone // match your database flag
+        holder.checkBox.isChecked = task.isDone
 
         // Long click → edit task
         holder.itemView.setOnLongClickListener {

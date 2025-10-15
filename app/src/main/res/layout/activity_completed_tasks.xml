@@ -8,7 +8,7 @@
         android:background="@color/meadow_light_bg"
         tools:context=".CompletedTasksActivity">
 
-    <!--    Header          -->
+    <!-- Header -->
     <TextView
             android:id="@+id/headerText"
             android:layout_width="0dp"
@@ -20,49 +20,72 @@
             android:textColor="@color/main_text"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <!--    Search Bar - styled with material outlinedbox-->
-
-    <!--    Task List with scrolling enabled    -->
-    <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/searchLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+    <!-- Search + Filter Row -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/searchFilterRow"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:hint="@string/search"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/headerText"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/headerText"
-            app:startIconDrawable="@android:drawable/ic_menu_search"
-            app:startIconTint="@color/meadow_accent_dark">
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/searchInput"
-                android:layout_width="match_parent"
+        <!-- Search bar -->
+        <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/searchLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:imeOptions="actionSearch"
-                android:inputType="text"
-                android:singleLine="true"
-                android:textColor="@color/main_text"
-                android:textColorHint="@color/meadow_olive" />
-    </com.google.android.material.textfield.TextInputLayout>
+                android:hint="@string/search"
+                app:startIconDrawable="@android:drawable/ic_menu_search"
+                app:startIconTint="@color/meadow_accent_dark"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/filterButton">
 
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/searchInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:singleLine="true"
+                    android:textColor="@color/main_text"
+                    android:textColorHint="@color/meadow_olive" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Filter icon -->
+        <ImageButton
+                android:id="@+id/filterButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_filter_list"
+                android:contentDescription="@string/filter_by_color"
+                app:tint="@color/meadow_accent_dark"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Completed Tasks List -->
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/completedRecyclerView"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:padding="8dp"
+            app:layout_constraintTop_toBottomOf="@id/searchFilterRow"
             app:layout_constraintBottom_toTopOf="@id/backToOngoingButton"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/searchLayout">
-    </androidx.recyclerview.widget.RecyclerView>
+            app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Back to Ongoing Button -->
     <Button
             android:id="@+id/backToOngoingButton"
             android:layout_width="175dp"
@@ -70,10 +93,8 @@
             android:text="@string/view_ongoing_tasks"
             android:textColor="@color/meadow_accent_dark"
             android:backgroundTint="@color/meadow_green"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginBottom="36dp"/>
+            android:layout_marginBottom="36dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
