@@ -16,28 +16,35 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 
 class CompletedTasksActivity : AppCompatActivity() {
+
     private lateinit var adapter: TaskAdapter
     private lateinit var dao: TaskDao
+
+    // Track current search and color filter state
+    private var currentSearchQuery: String = ""
+    private var currentColorFilter: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_completed_tasks)
 
-        val searchInput = findViewById<EditText>(R.id.searchInput)
-        val backButton = findViewById<Button>(R.id.backToOngoingButton)
+        // ----- Initialize database and DAO -----
         val db = TaskDatabase.getDatabase(this)
         dao = db.taskDao()
 
+        // ----- Get UI references -----
+        val searchInput = findViewById<EditText>(R.id.searchInput)
+        val backButton = findViewById<Button>(R.id.backToOngoingButton)
         val recyclerView = findViewById<RecyclerView>(R.id.completedRecyclerView)
         val filterButton = findViewById<ImageButton>(R.id.filterButton)
 
-        //color filter popup
+        // ----- Filter by color using popup menu -----
         filterButton.setOnClickListener {
             val popup = PopupMenu(this, filterButton)
             popup.menuInflater.inflate(R.menu.color_filter_menu, popup.menu)
 
             popup.setOnMenuItemClickListener { item ->
-                val selectedColorResId = when (item.itemId) {
+                currentColorFilter = when (item.itemId) {
                     R.id.filter_all -> null
                     R.id.filter_blue -> R.color.task_blue
                     R.id.filter_yellow -> R.color.task_yellow
@@ -46,76 +53,74 @@ class CompletedTasksActivity : AppCompatActivity() {
                     R.id.filter_default -> R.color.meadow_beige
                     else -> null
                 }
-                //queries and updates recyclerview based on color
-                lifecycleScope.launch {
-                    val tasks = if (selectedColorResId == null) {
-                        dao.getCompletedTasks()
-                    } else {
-                        dao.getCompletedTasksByColor(selectedColorResId)
-                    }
-                    adapter.updateList(tasks)
-                }
-
+                applyCombinedFilters()
                 true
             }
 
             popup.show()
         }
 
-        //handle search input (filter db)
-        searchInput.addTextChangedListener(object:TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?,
-                                           start: Int,
-                                           count: Int,
-                                           after: Int) {}
-            override fun onTextChanged(s: CharSequence?,
-                                       start: Int,
-                                       count: Int,
-                                       after: Int) {
-                val query = s.toString().trim()
-                lifecycleScope.launch {
-                    val tasks = if (query.isEmpty()) {
-                        dao.getCompletedTasks()
-                    } else {
-                        dao.searchCompletedTasks("%$query%")
-                    }
-                    adapter.updateList(tasks)
-                }
+        // ----- Search bar input handler -----
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                currentSearchQuery = s.toString().trim()
+                applyCombinedFilters()
             }
-
             override fun afterTextChanged(s: Editable?) {}
         })
 
+        // ----- Back button: return to main screen -----
         backButton.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
         }
 
+        // ----- Initialize adapter and RecyclerView -----
         adapter = TaskAdapter(emptyList()) { task ->
+            // If task is edited or undone from swipe
             lifecycleScope.launch {
                 dao.updateTask(task)
-                refreshTasks()
+                applyCombinedFilters()
             }
         }
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
-        //swipe to delete with undo
+
+        // ----- Swipe to delete with undo option -----
         val itemTouchHelper = ItemTouchHelper(
             createSwipeToDeleteCallback(adapter, recyclerView, dao, lifecycleScope)
         )
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
-        refreshTasks()
+        // Initial load
+        applyCombinedFilters()
     }
 
-    private fun refreshTasks() {
-        lifecycleScope.launch {
-            val completedTasks = dao.getCompletedTasks()
-            adapter.updateList(completedTasks)
-        }
-    }
-
-    override fun onResume(){
+    // ----- Refresh filtered list when resuming -----
+    override fun onResume() {
         super.onResume()
-        refreshTasks()
+        applyCombinedFilters()
+    }
+
+    // ----- Combined search + color filtering logic -----
+    private fun applyCombinedFilters() {
+        lifecycleScope.launch {
+            val baseTasks = if (currentColorFilter == null) {
+                dao.getCompletedTasks()
+            } else {
+                dao.getCompletedTasksByColor(currentColorFilter!!)
+            }
+
+            val filteredTasks = if (currentSearchQuery.isBlank()) {
+                baseTasks
+            } else {
+                baseTasks.filter { task ->
+                    task.title.contains(currentSearchQuery, ignoreCase = true) ||
+                            task.description.contains(currentSearchQuery, ignoreCase = true)
+                }
+            }
+
+            adapter.updateList(filteredTasks)
+        }
     }
 }

@@ -19,122 +19,149 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var adapter: TaskAdapter //initialized later in onCreate
+    private lateinit var adapter: TaskAdapter
     private lateinit var db: TaskDatabase
     private lateinit var dao: TaskDao
 
-    //init, set layout, UI configuration
+    // Track current search, color, and sort state
+    private var currentSearchQuery: String = ""
+    private var currentColorFilter: Int? = null
+    private var currentSortOrder: SortOrder = SortOrder.NONE
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        //init db
+        // ----- Initialize database and DAO -----
         db = TaskDatabase.getDatabase(this)
         dao = db.taskDao()
 
+        // ----- Get view references -----
         val searchInput = findViewById<EditText>(R.id.searchInput)
         val fab = findViewById<FloatingActionButton>(R.id.taskFab)
         val recyclerView = findViewById<RecyclerView>(R.id.taskRecyclerView)
         val completedButton = findViewById<Button>(R.id.completedTasksButton)
         val filterButton = findViewById<ImageButton>(R.id.filterButton)
 
-        //load all tasks from db
+        // ----- Set up RecyclerView with adapter -----
         adapter = TaskAdapter(emptyList()) { updatedTask ->
             lifecycleScope.launch {
                 dao.updateTask(updatedTask)
-                val tasks = dao.getOngoingTasks()
-                adapter.updateList(tasks)
+                applyCombinedFilters()
             }
         }
-
-        //recyclerview setup
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        //handle search input (filter db)
+        // ----- Handle live search input -----
         searchInput.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                currentSearchQuery = s.toString().trim()
+                applyCombinedFilters()
             }
-
-            override fun onTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
-                val query = s.toString().trim()
-                lifecycleScope.launch {
-                    val tasks = if (query.isEmpty()) {
-                        dao.getOngoingTasks()
-                    } else {
-                        dao.searchOngoingTasks("%$query%")
-                    }
-                    adapter.updateList(tasks)
-                }
-            }
-
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        //handles the FAB clicker to create new task
+        // ----- Floating Action Button → Add Task -----
         fab.setOnClickListener {
             val intent = Intent(this, TaskActivity::class.java)
             startActivity(intent)
         }
-        //navigate to the completed tasks
+
+        // ----- Navigate to completed tasks screen -----
         completedButton.setOnClickListener {
             startActivity(Intent(this, CompletedTasksActivity::class.java))
         }
-        //filters by color popup
+
+        // ----- Filter and sort popup menu -----
         filterButton.setOnClickListener {
             val popup = PopupMenu(this, filterButton)
             popup.menuInflater.inflate(R.menu.color_filter_menu, popup.menu)
 
             popup.setOnMenuItemClickListener { item ->
-                val selectedColorResId = when (item.itemId) {
-                    R.id.filter_all -> null
-                    R.id.filter_blue -> R.color.task_blue
-                    R.id.filter_yellow -> R.color.task_yellow
-                    R.id.filter_pink -> R.color.task_pink
-                    R.id.filter_orange -> R.color.task_orange
-                    R.id.filter_default -> R.color.meadow_beige
-                    else -> null
+                when (item.itemId) {
+                    // Color filtering options
+                    R.id.filter_all -> currentColorFilter = null
+                    R.id.filter_blue -> currentColorFilter = R.color.task_blue
+                    R.id.filter_yellow -> currentColorFilter = R.color.task_yellow
+                    R.id.filter_pink -> currentColorFilter = R.color.task_pink
+                    R.id.filter_orange -> currentColorFilter = R.color.task_orange
+                    R.id.filter_default -> currentColorFilter = R.color.meadow_beige
+
+                    // Deadline sorting options
+                    R.id.sort_deadline_asc -> currentSortOrder = SortOrder.ASCENDING
+                    R.id.sort_deadline_desc -> currentSortOrder = SortOrder.DESCENDING
+                    R.id.sort_deadline_none -> currentSortOrder = SortOrder.NONE
                 }
 
-                lifecycleScope.launch {
-                    val tasks = if (selectedColorResId == null) {
-                        dao.getOngoingTasks()
-                    } else {
-                        dao.getOngoingTasksByColor(selectedColorResId)
-                    }
-                    adapter.updateList(tasks)
-                }
-
+                // Refresh the list with the selected filters/sort order
+                applyCombinedFilters()
                 true
             }
 
             popup.show()
         }
 
-
-        //swipe to complete - with undo function
+        // ----- Swipe to mark task as completed -----
         val itemTouchHelper = ItemTouchHelper(
             createSwipeCallback(adapter, recyclerView, dao, lifecycleScope)
         )
         itemTouchHelper.attachToRecyclerView(recyclerView)
+
+        // Load tasks initially
+        applyCombinedFilters()
     }
 
-        override fun onResume(){
+    // ----- Refresh tasks when returning from TaskActivity -----
+    override fun onResume() {
         super.onResume()
+        applyCombinedFilters()
+    }
+
+    // ----- Combine search, color filter, and sorting -----
+    private fun applyCombinedFilters() {
         lifecycleScope.launch {
-            val tasks = dao.getOngoingTasks()
-            adapter.updateList(tasks)
+            // Apply color filter
+            val baseTasks = if (currentColorFilter == null) {
+                dao.getOngoingTasks()
+            } else {
+                dao.getOngoingTasksByColor(currentColorFilter!!)
+            }
+
+            // Apply search filter
+            val filteredTasks = if (currentSearchQuery.isBlank()) {
+                baseTasks
+            } else {
+                baseTasks.filter { task ->
+                    task.title.contains(currentSearchQuery, ignoreCase = true) ||
+                            task.description.contains(currentSearchQuery, ignoreCase = true)
+                }
+            }
+
+            // Apply sorting by deadline
+            val sortedTasks = when (currentSortOrder) {
+                SortOrder.ASCENDING -> filteredTasks.sortedWith(compareBy(
+                    { it.deadline.isEmpty() }, // put empty deadlines last
+                    { it.deadline }
+                ))
+                SortOrder.DESCENDING -> filteredTasks.sortedWith(compareBy(
+                    { it.deadline.isEmpty() },
+                    { it.deadline }
+                )).reversed()
+                SortOrder.NONE -> filteredTasks
+            }
+
+            // Update RecyclerView
+            adapter.updateList(sortedTasks)
         }
     }
+}
+
+// ----- Enum for sorting order -----
+enum class SortOrder {
+    ASCENDING,
+    DESCENDING,
+    NONE
 }
