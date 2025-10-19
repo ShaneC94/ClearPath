@@ -1,13 +1,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Color Filters -->
-    <group android:checkableBehavior="none">
-        <item android:id="@+id/filter_all" android:title="All Colors" />
-        <item android:id="@+id/filter_blue" android:title="Blue" />
-        <item android:id="@+id/filter_yellow" android:title="Yellow" />
-        <item android:id="@+id/filter_pink" android:title="Pink" />
-        <item android:id="@+id/filter_orange" android:title="Orange" />
-        <item android:id="@+id/filter_default" android:title="Default" />
-    </group>
+    <item android:title="Sort by Color">
+        <menu>
+            <item android:id="@+id/filter_all" android:title="All Colors" />
+            <item android:id="@+id/filter_blue" android:title="Blue" />
+            <item android:id="@+id/filter_yellow" android:title="Yellow" />
+            <item android:id="@+id/filter_pink" android:title="Pink" />
+            <item android:id="@+id/filter_orange" android:title="Orange" />
+            <item android:id="@+id/filter_default" android:title="Default" />
+        </menu>
+    </item>
 
     <!-- Sort Options -->
     <item android:title="Sort by Deadline">
