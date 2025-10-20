@@ -118,7 +118,6 @@ class CompletedTasksActivity : AppCompatActivity() {
                             task.description.contains(currentSearchQuery, ignoreCase = true)
                 }
             }
-
             adapter.updateList(filteredTasks)
         }
     }

@@ -12,6 +12,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 
+
 class TaskActivity : AppCompatActivity() {
     private lateinit var service: TaskService
     private var taskId: Int? = null // null means new task

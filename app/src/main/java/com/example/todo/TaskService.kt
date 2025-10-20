@@ -11,6 +11,7 @@ class TaskService(context: Context) {
     suspend fun deleteTask(task: Task) = dao.deleteTask(task)
     suspend fun getTaskById(id: Int) = dao.getTaskById(id)
 
+
     // ----- Filters & Queries -----
     suspend fun getOngoingTasks() = dao.getOngoingTasks()
     suspend fun getCompletedTasks() = dao.getCompletedTasks()

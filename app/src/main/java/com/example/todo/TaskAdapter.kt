@@ -111,7 +111,6 @@ class TaskAdapter(
         notifyDataSetChanged()
     }
 
-
     // Helper for swipe-to-complete/delete
     fun getTaskAt(position: Int): Task = taskList[position]
 }

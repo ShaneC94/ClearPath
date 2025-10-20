@@ -1,7 +1,6 @@
 package com.example.todo
 
 import androidx.room.*
-
 @Dao
 interface TaskDao {
     @Insert

@@ -21,6 +21,7 @@ fun createSwipeCallback(
             target: RecyclerView.ViewHolder
         ): Boolean = false
 
+
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             val position = viewHolder.bindingAdapterPosition
             val task = adapter.getTaskAt(position)
