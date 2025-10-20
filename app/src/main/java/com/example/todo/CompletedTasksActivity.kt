@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 class CompletedTasksActivity : AppCompatActivity() {
 
     private lateinit var adapter: TaskAdapter
-    private lateinit var dao: TaskDao
+    private lateinit var service: TaskService
 
     // Track current search and color filter state
     private var currentSearchQuery: String = ""
@@ -28,9 +28,8 @@ class CompletedTasksActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_completed_tasks)
 
-        // ----- Initialize database and DAO -----
-        val db = TaskDatabase.getDatabase(this)
-        dao = db.taskDao()
+        // ----- Initialize TaskService (Controller) -----
+        service = TaskService(this)
 
         // ----- Get UI references -----
         val searchInput = findViewById<EditText>(R.id.searchInput)
@@ -77,9 +76,8 @@ class CompletedTasksActivity : AppCompatActivity() {
 
         // ----- Initialize adapter and RecyclerView -----
         adapter = TaskAdapter(emptyList()) { task ->
-            // If task is edited or undone from swipe
             lifecycleScope.launch {
-                dao.updateTask(task)
+                service.updateTask(task)
                 applyCombinedFilters()
             }
         }
@@ -88,7 +86,7 @@ class CompletedTasksActivity : AppCompatActivity() {
 
         // ----- Swipe to delete with undo option -----
         val itemTouchHelper = ItemTouchHelper(
-            createSwipeToDeleteCallback(adapter, recyclerView, dao, lifecycleScope)
+            createSwipeToDeleteCallback(adapter, recyclerView, service, lifecycleScope)
         )
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
@@ -105,10 +103,11 @@ class CompletedTasksActivity : AppCompatActivity() {
     // ----- Combined search + color filtering logic -----
     private fun applyCombinedFilters() {
         lifecycleScope.launch {
+            // Uses service to fetch data instead of DAO
             val baseTasks = if (currentColorFilter == null) {
-                dao.getCompletedTasks()
+                service.getCompletedTasks()
             } else {
-                dao.getCompletedTasksByColor(currentColorFilter!!)
+                service.getCompletedTasksByColor(currentColorFilter!!)
             }
 
             val filteredTasks = if (currentSearchQuery.isBlank()) {
