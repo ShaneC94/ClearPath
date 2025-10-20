@@ -35,7 +35,7 @@ fun createSwipeCallback(
                     .setAction("UNDO") {
                         lifecycleScope.launch {
                             val undoneTask = task.copy(isDone = false)
-                            service.updateTask(undoneTask) // ✅ use service
+                            service.updateTask(undoneTask)
                             adapter.updateList(service.getOngoingTasks())
                         }
                     }.show()

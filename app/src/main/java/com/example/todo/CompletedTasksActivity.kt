@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 
+
 class CompletedTasksActivity : AppCompatActivity() {
 
     private lateinit var adapter: TaskAdapter
@@ -103,7 +104,6 @@ class CompletedTasksActivity : AppCompatActivity() {
     // ----- Combined search + color filtering logic -----
     private fun applyCombinedFilters() {
         lifecycleScope.launch {
-            // Uses service to fetch data instead of DAO
             val baseTasks = if (currentColorFilter == null) {
                 service.getCompletedTasks()
             } else {

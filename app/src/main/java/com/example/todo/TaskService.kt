@@ -17,7 +17,6 @@ class TaskService(context: Context) {
 
     suspend fun getOngoingTasksByColor(colorResId: Int) =
         dao.getOngoingTasksByColor(colorResId)
-
     suspend fun getCompletedTasksByColor(colorResId: Int) =
         dao.getCompletedTasksByColor(colorResId)
 

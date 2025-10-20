@@ -157,6 +157,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
+
 // ----- Enum for sorting order -----
 enum class SortOrder {
     ASCENDING,
