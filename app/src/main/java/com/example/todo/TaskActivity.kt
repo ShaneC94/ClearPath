@@ -12,15 +12,16 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 
+
 class TaskActivity : AppCompatActivity() {
-    private lateinit var dao: TaskDao
-    private var taskId: Int? = null //null means new task, not editing
+    private lateinit var service: TaskService
+    private var taskId: Int? = null // null means new task
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_task_generator)
 
-        val deadlineInput = findViewById< TextInputEditText>(R.id.editDeadlineDate)
+        val deadlineInput = findViewById<TextInputEditText>(R.id.editDeadlineDate)
         val deadlineLayout = findViewById<TextInputLayout>(R.id.deadlineLayout)
         val titleInput = findViewById<TextInputEditText>(R.id.editTitle)
         val titleLayout = findViewById<TextInputLayout>(R.id.titleLayout)
@@ -30,21 +31,20 @@ class TaskActivity : AppCompatActivity() {
         val saveButton = findViewById<Button>(R.id.saveButton)
         val colorGroup = findViewById<RadioGroup>(R.id.colorPickerGroup)
 
+        // ----- Initialize TaskService (Controller) -----
+        service = TaskService(this)
 
-        //init db
-        val db = TaskDatabase.getDatabase(this)
-        dao = db.taskDao()
-
+        // ----- Check if editing an existing task -----
         taskId = intent.getIntExtra("taskId", -1).takeIf { it != -1 }
         taskId?.let { id ->
             lifecycleScope.launch {
-                val task = dao.getTaskById(id)
+                val task = service.getTaskById(id)
                 if (task != null) {
                     titleInput.setText(task.title)
                     deadlineInput.setText(task.deadline)
                     descriptionInput.setText(task.description)
 
-                    // restore previously selected color
+                    // Restore selected color
                     when (task.colorResId) {
                         R.color.task_blue -> colorGroup.check(R.id.colorBlue)
                         R.color.task_yellow -> colorGroup.check(R.id.colorYellow)
@@ -60,8 +60,7 @@ class TaskActivity : AppCompatActivity() {
             }
         }
 
-
-        // Live color change on the input boxes
+        // ----- Live color change -----
         colorGroup.setOnCheckedChangeListener { _, checkedId ->
             val selectedColorId = when (checkedId) {
                 R.id.colorBlue -> R.color.task_blue
@@ -72,47 +71,40 @@ class TaskActivity : AppCompatActivity() {
             }
 
             val color = getColor(selectedColorId)
-
             titleLayout.boxBackgroundColor = color
             deadlineLayout.boxBackgroundColor = color
             descriptionLayout.boxBackgroundColor = color
         }
 
-
-        // Modal Date Picker
+        // ----- Date picker -----
         deadlineLayout.setEndIconOnClickListener {
             val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            //opens with today's date as default
-            val datePicker = DatePickerDialog(this, { _, selYear, selMonth, selDay ->
-                val selectedDate = "${selYear}/${selMonth + 1}/${selDay}"
-                deadlineInput.setText(selectedDate)
-            }, year, month, day)
+            val datePicker = DatePickerDialog(
+                this,
+                { _, year, month, day ->
+                    deadlineInput.setText("$year/${month + 1}/$day")
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
             datePicker.show()
         }
-        // The user does a normal click and is navigated back without saving
-        backButton.setOnClickListener {
-            finish()
-        }
-        // The user does a normal click and is navigated back with saving
-        //and task generation
+
+
+        // ----- Back button -----
+        backButton.setOnClickListener { finish() }
+
+        // ----- Save task -----
         saveButton.setOnClickListener {
-            val taskTitle = titleInput.text.toString().trim()
-            if (taskTitle.isEmpty()) {
+            val title = titleInput.text.toString().trim()
+            if (title.isEmpty()) {
                 titleInput.error = "A title is required"
                 return@setOnClickListener
             }
 
-            val taskDeadline = deadlineInput.text.toString().trim().ifEmpty {
-                "No deadline"
-            }
-
-            val taskDescription = descriptionInput.text.toString().trim().ifEmpty {
-                "No description"
-            }
+            val deadline = deadlineInput.text.toString().ifEmpty { "No deadline" }
+            val description = descriptionInput.text.toString().ifEmpty { "No description" }
 
             val selectedColorId = when (colorGroup.checkedRadioButtonId) {
                 R.id.colorBlue -> R.color.task_blue
@@ -124,43 +116,26 @@ class TaskActivity : AppCompatActivity() {
 
             lifecycleScope.launch {
                 if (taskId == null) {
-                    //create a new task
-                    dao.insertTask(
-                        Task(
-                            title = taskTitle,
-                            deadline = taskDeadline,
-                            description = taskDescription,
-                            colorResId = selectedColorId
-
-                        )
-                    )
-                    Toast.makeText(
-                        this@TaskActivity,
-                        "Task saved successfully!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    // Create new task
+                    service.addTask(Task(title = title, deadline = deadline, description = description, colorResId = selectedColorId))
+                    Toast.makeText(this@TaskActivity, "Task saved successfully!", Toast.LENGTH_SHORT).show()
                 } else {
-                    taskId?.let { id ->
-                        val existing = dao.getTaskById(id)
-                        if (existing != null) {
-                            val updated = existing.copy(
-                                title = taskTitle,
-                                deadline = taskDeadline,
-                                description = taskDescription,
-                                colorResId = selectedColorId
-                            )
-                            dao.updateTask(updated)
-                            Toast.makeText(
-                                this@TaskActivity,
-                                "Task saved successfully!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+                    // Update existing task
+                    val existing = service.getTaskById(taskId!!)
+                    if (existing != null) {
+                        val updated = existing.copy(
+                            title = title,
+                            deadline = deadline,
+                            description = description,
+                            colorResId = selectedColorId
+                        )
+                        service.updateTask(updated)
+                        Toast.makeText(this@TaskActivity, "Task updated successfully!", Toast.LENGTH_SHORT).show()
                     }
                 }
                 finish()
             }
-            // If the user long clicks, it's ignored and nothing happens
+
             backButton.setOnLongClickListener { true }
             saveButton.setOnLongClickListener { true }
         }

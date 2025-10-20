@@ -20,8 +20,7 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: TaskAdapter
-    private lateinit var db: TaskDatabase
-    private lateinit var dao: TaskDao
+    private lateinit var service: TaskService
 
     // Track current search, color, and sort state
     private var currentSearchQuery: String = ""
@@ -33,9 +32,8 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // ----- Initialize database and DAO -----
-        db = TaskDatabase.getDatabase(this)
-        dao = db.taskDao()
+        // ----- Initialize TaskService -----
+        service = TaskService(this)
 
         // ----- Get view references -----
         val searchInput = findViewById<EditText>(R.id.searchInput)
@@ -47,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         // ----- Set up RecyclerView with adapter -----
         adapter = TaskAdapter(emptyList()) { updatedTask ->
             lifecycleScope.launch {
-                dao.updateTask(updatedTask)
+                service.updateTask(updatedTask)
                 applyCombinedFilters()
             }
         }
@@ -106,7 +104,7 @@ class MainActivity : AppCompatActivity() {
 
         // ----- Swipe to mark task as completed -----
         val itemTouchHelper = ItemTouchHelper(
-            createSwipeCallback(adapter, recyclerView, dao, lifecycleScope)
+            createSwipeCallback(adapter, recyclerView, service, lifecycleScope)
         )
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
@@ -125,9 +123,9 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             // Apply color filter
             val baseTasks = if (currentColorFilter == null) {
-                dao.getOngoingTasks()
+                service.getOngoingTasks()
             } else {
-                dao.getOngoingTasksByColor(currentColorFilter!!)
+                service.getOngoingTasksByColor(currentColorFilter!!)
             }
 
             // Apply search filter

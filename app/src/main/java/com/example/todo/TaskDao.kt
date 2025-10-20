@@ -1,7 +1,6 @@
 package com.example.todo
 
 import androidx.room.*
-
 @Dao
 interface TaskDao {
     @Insert
@@ -12,9 +11,6 @@ interface TaskDao {
 
     @Delete
     suspend fun deleteTask(task: Task)
-
-//    @Query("SELECT * FROM tasks ORDER BY id DESC")
-//    suspend fun getAllTasks(): List<Task>
 
     @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY id DESC")
     suspend fun getOngoingTasks(): List<Task>
