@@ -66,10 +66,10 @@ com.todo.clearpath
 data class Task(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
-    val description: String?,
-    val deadline: String?,
-    val colorResId: Int,
-    val isCompleted: Boolean = false
+    val description: String,
+    val deadline: String,
+    val isDone: Boolean = false,
+    val colorResId: Int
 )
 ```
 
