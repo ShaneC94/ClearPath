@@ -1,4 +1,4 @@
-package com.example.todo
+package com.todo.clearpath
 
 import androidx.room.*
 @Dao
