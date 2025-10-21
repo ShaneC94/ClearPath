@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.todo"
+    namespace = "com.todo.clearpath"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.todo"
+        applicationId = "com.todo.clearpath"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

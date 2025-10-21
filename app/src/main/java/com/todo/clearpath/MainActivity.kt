@@ -1,4 +1,4 @@
-package com.example.todo
+package com.todo.clearpath
 
 import android.content.Intent
 import android.os.Bundle
