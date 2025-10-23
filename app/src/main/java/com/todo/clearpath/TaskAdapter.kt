@@ -1,17 +1,20 @@
 package com.todo.clearpath
 
 import android.content.Intent
+import android.net.Uri
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 
 class TaskAdapter(
     private var taskList: List<Task>,
@@ -27,6 +30,7 @@ class TaskAdapter(
         val title: TextView = itemView.findViewById(R.id.taskTitle)
         val deadline: TextView = itemView.findViewById(R.id.taskDeadline)
         val description: TextView = itemView.findViewById(R.id.taskDescription)
+        val imagePreview: ImageView = itemView.findViewById(R.id.taskImagePreview)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -46,6 +50,29 @@ class TaskAdapter(
         holder.description.text = task.description
         holder.checkBox.setOnCheckedChangeListener(null)
         holder.checkBox.isChecked = task.isDone
+
+        // Dynamically show/hide image preview
+        if (!task.imageUri.isNullOrEmpty()) {
+            val file = File(task.imageUri)
+            if (file.exists()) {
+                holder.imagePreview.setImageURI(Uri.fromFile(file))
+                holder.imagePreview.visibility = View.VISIBLE
+            } else {
+                holder.imagePreview.setImageDrawable(null)
+                holder.imagePreview.visibility = View.GONE
+            }
+        } else {
+            holder.imagePreview.setImageDrawable(null)
+            holder.imagePreview.visibility = View.GONE
+        }
+
+        // Tap to enlarge image
+        holder.imagePreview.setOnClickListener {
+            task.imageUri?.let { uri ->
+                holder.itemView.context.showImagePopup(uri)
+            }
+        }
+
 
         // Long click → edit task
         holder.itemView.setOnLongClickListener {

@@ -87,7 +87,7 @@ class CompletedTasksActivity : AppCompatActivity() {
 
         // ----- Swipe to delete with undo option -----
         val itemTouchHelper = ItemTouchHelper(
-            createSwipeToDeleteCallback(adapter, recyclerView, service, lifecycleScope)
+            createCompletedSwipeCallback(adapter, recyclerView, service, lifecycleScope)
         )
         itemTouchHelper.attachToRecyclerView(recyclerView)
 

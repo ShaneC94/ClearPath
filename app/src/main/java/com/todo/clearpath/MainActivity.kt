@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
 
         // ----- Swipe to mark task as completed -----
         val itemTouchHelper = ItemTouchHelper(
-            createSwipeCallback(adapter, recyclerView, service, lifecycleScope)
+            createMainSwipeCallback(adapter, recyclerView, service, lifecycleScope, this)
         )
         itemTouchHelper.attachToRecyclerView(recyclerView)
 

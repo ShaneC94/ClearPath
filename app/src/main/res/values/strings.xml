@@ -17,6 +17,11 @@
     <string name="view_ongoing_tasks">View Ongoing Tasks</string>
     <string name="deadline_task_card">Deadline: %1$s</string>
     <string name="filter_by_color">Filter by color</string>
+    <string name="task_image">Enter Image</string>
+    <string name="camera">Camera</string>
+    <string name="upload">Upload</string>
+    <string name="remove_image">Remove Image</string>
+    <string name="delete_task">Delete Task</string>
 
     <string-array name="color_filter_options">
         <item>All Colors</item>
