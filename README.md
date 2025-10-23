@@ -95,7 +95,8 @@ data class Task(
     val description: String,
     val deadline: String,
     val isDone: Boolean = false,
-    val colorResId: Int
+    val colorResId: Int,
+    val imageUri: String? = null
 )
 ```
 
