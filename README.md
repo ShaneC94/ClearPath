@@ -10,7 +10,9 @@ It provides a simple, responsive interface for managing daily tasks efficiently 
 ClearPath allows users to:
 - Add, edit, delete, and mark tasks as completed  
 - Assign color labels for quick organization  
-- Search and sort tasks by color or deadline  
+- Search and sort tasks by color or deadline
+- Upload or capture images for tasks
+- View attached images with a fullscreen popup viewer
 - View completed tasks in a dedicated section  
 - Remove tasks easily using swipe-to-delete  
 - Benefit from smooth performance through Kotlin coroutines for asynchronous database operations  
@@ -35,8 +37,31 @@ The application follows the **MVC architecture** to ensure a clean separation of
 - **Architecture:** Model-View-Controller (MVC)  
 - **Database:** Room (SQLite abstraction)  
 - **Concurrency:** Kotlin Coroutines  
-- **UI Components:** RecyclerView, CardView, ConstraintLayout, SearchView  
+- **UI Components:** RecyclerView, CardView, ConstraintLayout, ScrollView
+- **UX Enhancements:** Fullscreen image viwer, swipe gestures, confirmation dialogs  
 - **Design Principles:** Material Design Guidelines  
+
+---
+
+## Features
+
+**CRUD Operations**
+- Create: Add new tasks with titles, descriptions, deadlines, and colors.
+- Read: View all active and completed tasks with smooth scrolling and filtering.
+- Update: Edit existing tasks and automatically update changes in the database.
+- Delete: Swipe left to delete a task, with Undo support for accidental removals.
+
+**Image Integration**
+- Capture new images directly with the camera or upload from the gallery.
+- Images are stored locally and linked to their corresponding task records.
+- Preview images in a compact thumbnail and tap to expand in fullscreen view.
+- Remove or replace images easily when editing tasks.
+
+**Filtering and Sorting**
+- Search by keyword across task titles and descriptions.
+- Filter by task color or clear filters to view all tasks.
+- Sort by deadline in ascending or descending order.
+
 
 ---
 
@@ -46,10 +71,11 @@ The application follows the **MVC architecture** to ensure a clean separation of
 com.todo.clearpath
 │
 ├── CompletedTasksActivity.kt    # Displays completed tasks
+├── ImagePopup.kt                # Handles fullscreen image viewer dialog
 ├── MainActivity.kt              # Displays and manages active tasks
-├── SwipeCallbackHelper.kt       # Handles swipe-to-delete gestures
+├── SwipeCallbackHelper.kt       # Handles swipe gestures and undo actions
 ├── Task.kt                      # Task entity definition (Room @Entity)
-├── TaskActivity.kt              # Activity for adding or editing tasks
+├── TaskActivity.kt              # Add/Edit task screen with image support
 ├── TaskAdapter.kt               # RecyclerView adapter for displaying tasks
 ├── TaskDao.kt                   # Data Access Object for CRUD operations
 ├── TaskDatabase.kt              # Singleton Room database instance
