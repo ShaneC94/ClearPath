@@ -193,7 +193,6 @@ abstract class TaskDatabase : RoomDatabase() {
 
 ## Future Enhancements
 
-- In-place task editing and updates  
 - Deadline notifications and reminders  
 - Calendar view and integration  
 - Cloud synchronization for multi-device use  
