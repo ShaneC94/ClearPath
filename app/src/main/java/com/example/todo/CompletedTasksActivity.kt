@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 
@@ -87,9 +88,18 @@ class CompletedTasksActivity : AppCompatActivity() {
 
         // ----- Swipe to delete with undo option -----
         val itemTouchHelper = ItemTouchHelper(
-            createSwipeToDeleteCallback(adapter, recyclerView, service, lifecycleScope)
+            createSwipeToDeleteCallback(adapter, recyclerView, service, lifecycleScope, {
+                service.getCompletedTasks()
+            }) { task ->
+                // Open TaskActivity and mark that it came from CompletedTasks
+                val intent = Intent(this, TaskActivity::class.java)
+                intent.putExtra("taskId", task.id)
+                intent.putExtra("fromCompleted", true)
+                startActivity(intent)
+            }
         )
         itemTouchHelper.attachToRecyclerView(recyclerView)
+
 
         // Initial load
         applyCombinedFilters()

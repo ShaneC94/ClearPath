@@ -102,9 +102,16 @@ class MainActivity : AppCompatActivity() {
             popup.show()
         }
 
-        // ----- Swipe to mark task as completed -----
+        // ----- Swipe to delete with undo option -----
         val itemTouchHelper = ItemTouchHelper(
-            createSwipeCallback(adapter, recyclerView, service, lifecycleScope)
+            createSwipeToDeleteCallback(adapter, recyclerView, service, lifecycleScope, {
+                service.getOngoingTasks()
+            }) { task ->
+                // Edit existing ongoing task
+                val intent = Intent(this, TaskActivity::class.java)
+                intent.putExtra("taskId", task.id)
+                startActivity(intent)
+            }
         )
         itemTouchHelper.attachToRecyclerView(recyclerView)
 

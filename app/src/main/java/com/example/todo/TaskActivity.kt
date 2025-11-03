@@ -34,6 +34,9 @@ class TaskActivity : AppCompatActivity() {
         // ----- Initialize TaskService (Controller) -----
         service = TaskService(this)
 
+        // ----- Check if activity was opened from CompletedTasksActivity -----
+        val fromCompleted = intent.getBooleanExtra("fromCompleted", false)
+
         // ----- Check if editing an existing task -----
         taskId = intent.getIntExtra("taskId", -1).takeIf { it != -1 }
         taskId?.let { id ->
@@ -127,10 +130,24 @@ class TaskActivity : AppCompatActivity() {
                             title = title,
                             deadline = deadline,
                             description = description,
-                            colorResId = selectedColorId
+                            colorResId = selectedColorId,
+                            // Move back to ongoing if its from completed
+                            isDone = if (fromCompleted) false else existing.isDone
                         )
                         service.updateTask(updated)
-                        Toast.makeText(this@TaskActivity, "Task updated successfully!", Toast.LENGTH_SHORT).show()
+                        if (fromCompleted) {
+                            Toast.makeText(
+                                this@TaskActivity,
+                                "Task updated and moved back to ongoing!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                this@TaskActivity,
+                                "Task updated successfully!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
                 finish()
