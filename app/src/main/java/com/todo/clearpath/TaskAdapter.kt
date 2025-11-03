@@ -74,7 +74,7 @@ class TaskAdapter(
         }
 
 
-        // Long click → edit task
+        // Long click = edit task
         holder.itemView.setOnLongClickListener {
             val context = holder.itemView.context
             val intent = Intent(context, TaskActivity::class.java)
@@ -120,7 +120,7 @@ class TaskAdapter(
             notifyItemChanged(position)
         }
 
-        // Check / uncheck → update database
+        // Check / uncheck = update database
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
             val updated = task.copy(isDone = isChecked)
             CoroutineScope(Dispatchers.IO).launch {

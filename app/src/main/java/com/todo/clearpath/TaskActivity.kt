@@ -38,6 +38,7 @@ class TaskActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_task_generator)
 
+        val fromCompleted = intent.getBooleanExtra("fromCompleted", false)
         val deadlineInput = findViewById<TextInputEditText>(R.id.editDeadlineDate)
         val deadlineLayout = findViewById<TextInputLayout>(R.id.deadlineLayout)
         val titleInput = findViewById<TextInputEditText>(R.id.editTitle)
@@ -257,17 +258,20 @@ class TaskActivity : AppCompatActivity() {
 
             lifecycleScope.launch {
                 if (taskId == null) {
+                    // New task
                     service.addTask(
                         Task(
                             title = title,
                             deadline = deadline,
                             description = description,
                             colorResId = selectedColorId,
-                            imageUri = imageUri
+                            imageUri = imageUri,
+                            isDone = false // new tasks are always ongoing
                         )
                     )
                     Toast.makeText(this@TaskActivity, "Task saved successfully!", Toast.LENGTH_SHORT).show()
                 } else {
+                    // Update existing task
                     val existing = service.getTaskById(taskId!!)
                     if (existing != null) {
                         val updated = existing.copy(
@@ -275,10 +279,17 @@ class TaskActivity : AppCompatActivity() {
                             deadline = deadline,
                             description = description,
                             colorResId = selectedColorId,
-                            imageUri = imageUri
+                            imageUri = imageUri,
+                            isDone = if (fromCompleted) false else existing.isDone
                         )
                         service.updateTask(updated)
-                        Toast.makeText(this@TaskActivity, "Task updated successfully!", Toast.LENGTH_SHORT).show()
+
+                        val message = if (fromCompleted)
+                            "Task restored to ongoing!"
+                        else
+                            "Task updated successfully!"
+
+                        Toast.makeText(this@TaskActivity, message, Toast.LENGTH_SHORT).show()
                     }
                 }
                 finish()
@@ -287,6 +298,7 @@ class TaskActivity : AppCompatActivity() {
             backButton.setOnLongClickListener { true }
             saveButton.setOnLongClickListener { true }
         }
+
     }
 
     private fun scaleCenterCrop(source: Bitmap, newWidth: Int, newHeight: Int): Bitmap {

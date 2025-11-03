@@ -9,8 +9,8 @@ import kotlinx.coroutines.launch
 
 /**
  * MainActivity swipe logic:
- * - Swipe LEFT → Delete task (with Undo)
- * - Swipe RIGHT → Edit task (opens TaskActivity)
+ * - Swipe LEFT = Delete task (with Undo)
+ * - Swipe RIGHT = Edit task (opens TaskActivity)
  */
 fun createMainSwipeCallback(
     adapter: TaskAdapter,
@@ -33,7 +33,7 @@ fun createMainSwipeCallback(
 
             when (direction) {
 
-                // Swipe LEFT → Delete task
+                // Swipe LEFT = Delete task
                 ItemTouchHelper.LEFT -> {
                     lifecycleScope.launch {
                         service.deleteTask(task)
@@ -49,7 +49,7 @@ fun createMainSwipeCallback(
                     }
                 }
 
-                // Swipe RIGHT → Edit task
+                // Swipe RIGHT = Edit task
                 ItemTouchHelper.RIGHT -> {
                     val intent = Intent(activity, TaskActivity::class.java).apply {
                         putExtra("taskId", task.id)
@@ -66,8 +66,8 @@ fun createMainSwipeCallback(
 
 /**
  * CompletedTasksActivity swipe logic:
- * - Swipe LEFT → Permanently delete (with Undo)
- * - Swipe RIGHT → Return task to MainActivity (mark as incomplete)
+ * - Swipe LEFT = Permanently delete (with Undo)
+ * - Swipe RIGHT = Edit task (open TaskActivity for review before optionally moving back)
  */
 fun createCompletedSwipeCallback(
     adapter: TaskAdapter,
@@ -89,7 +89,7 @@ fun createCompletedSwipeCallback(
 
             when (direction) {
 
-                // Swipe LEFT → Delete permanently
+                // Swipe LEFT = Delete permanently
                 ItemTouchHelper.LEFT -> {
                     lifecycleScope.launch {
                         service.deleteTask(task)
@@ -105,43 +105,21 @@ fun createCompletedSwipeCallback(
                     }
                 }
 
-                // Swipe RIGHT → Move back to ongoing (MainActivity) with Undo
+                // Swipe RIGHT = Edit task before moving to ongoing
                 ItemTouchHelper.RIGHT -> {
-                    // Temporarily remove the item from completed list
-                    lifecycleScope.launch {
-                        val updatedTask = task.copy(isDone = false)
-                        service.deleteTask(task)
-                        adapter.updateList(service.getCompletedTasks())
-
-                        val snackbar = Snackbar.make(
-                            recyclerView,
-                            "Task moved back to ongoing",
-                            Snackbar.LENGTH_LONG
-                        )
-
-                        snackbar.setAction("UNDO") {
-                            lifecycleScope.launch {
-                                service.addTask(task.copy(isDone = true))
-                                adapter.updateList(service.getCompletedTasks())
-                            }
-                        }
-
-                        snackbar.addCallback(object : Snackbar.Callback() {
-                            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                                // Only commit if UNDO was not pressed
-                                if (event != DISMISS_EVENT_ACTION) {
-                                    lifecycleScope.launch {
-                                        service.addTask(updatedTask)
-                                    }
-                                }
-                            }
-                        })
-
-                        snackbar.show()
+                    val context = recyclerView.context
+                    val intent = Intent(context, TaskActivity::class.java).apply {
+                        putExtra("taskId", task.id)
+                        putExtra("fromCompleted", true) // mark that it came from Completed
                     }
+                    context.startActivity(intent)
+
+                    // Reset swipe so the item remains visible
+                    adapter.notifyItemChanged(position)
                 }
             }
         }
     }
 }
+
 
