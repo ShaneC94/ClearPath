@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        // ----- Floating Action Button → Add Task -----
+        // ----- Floating Action Button = Add Task -----
         fab.setOnClickListener {
             val intent = Intent(this, TaskActivity::class.java)
             startActivity(intent)
